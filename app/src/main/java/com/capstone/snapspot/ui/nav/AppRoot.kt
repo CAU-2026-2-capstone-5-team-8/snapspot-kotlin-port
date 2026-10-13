@@ -49,6 +49,7 @@ import com.capstone.snapspot.ui.add.AddRoute
 import com.capstone.snapspot.ui.add.AddViewModel
 import com.capstone.snapspot.ui.coupon.CouponDetailContent
 import com.capstone.snapspot.ui.coupons.CouponsContent
+import com.capstone.snapspot.ui.map.MapBranchViewModel
 import com.capstone.snapspot.ui.map.MapContent
 import com.capstone.snapspot.ui.map.MapSupport
 import com.capstone.snapspot.ui.permissions.PermissionGuideRoute
@@ -79,8 +80,10 @@ fun AppRoot() {
     // Created here, outside the NavHost, so every screen shares one of each.
     val addVm: AddViewModel = hiltViewModel()
     val app: AppViewModel = hiltViewModel()
+    val mapVm: MapBranchViewModel = hiltViewModel()
 
     val places by app.places.collectAsStateWithLifecycle()
+    val mapBranches by mapVm.state.collectAsStateWithLifecycle()
     val coupons by app.coupons.collectAsStateWithLifecycle()
     val here by app.here.collectAsStateWithLifecycle()
     val win by app.win.collectAsStateWithLifecycle()
@@ -146,6 +149,11 @@ fun AppRoot() {
                     onJustSavedShown = app::clearJustSaved,
                     mapSupport = MapSupport.current,
                     onSetupAlerts = { nav.navigate(Route.PERMISSIONS) { launchSingleTop = true } },
+                    coupons = coupons,
+                    mapBranches = mapBranches.branches,
+                    onHere = { at, following -> mapVm.onHere(at, following, coupons) },
+                    onSearchHere = { center -> mapVm.searchAt(center, coupons) },
+                    onOpenCoupon = { nav.navigate(Route.coupon(it)) },
                 )
             }
             composable(Route.COUPONS) {

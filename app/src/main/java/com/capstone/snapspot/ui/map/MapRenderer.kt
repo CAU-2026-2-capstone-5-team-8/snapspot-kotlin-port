@@ -7,10 +7,12 @@ import com.capstone.snapspot.domain.BRANCH_RADIUS_M
 import com.capstone.snapspot.domain.REFRESH_RADIUS_M
 import com.capstone.snapspot.domain.distanceMeters
 import com.capstone.snapspot.domain.isNear
+import com.capstone.snapspot.domain.model.BranchRef
 import com.capstone.snapspot.domain.model.Coords
 import com.capstone.snapspot.domain.model.Place
 import com.capstone.snapspot.domain.model.WindowState
 import com.capstone.snapspot.ui.theme.SnapColor
+import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.camera.CameraAnimation
@@ -32,7 +34,14 @@ class MapScene(
     val win: WindowState?,
     val selectedId: String?,
     val thumbs: Map<String, Bitmap>,
+    /** Coupon branches to draw and make tappable; null keeps the watch plan's own, not tappable. */
+    val branches: Map<String, BranchRef>? = null,
+    /** The first view is placed on the user (when known) instead of fitted around the saved places. */
+    val following: Boolean = false,
 )
+
+/** Marks a badge label so a tap on it is not mistaken for a tap on a place pin (those carry the place id). */
+private class BranchTag(val brandKey: String)
 
 /**
  * Draws a [MapScene] on a Kakao map: pins, alert-radius circles, coupon-branch badges, the refresh circle
@@ -53,15 +62,32 @@ class MapRenderer(private val density: Float) {
     private var fitted = false
     private val meBitmap by lazy { MapBitmaps.meDot(density) }
 
-    fun attach(map: KakaoMap, onPlaceClick: (String?) -> Unit) {
+    fun attach(
+        map: KakaoMap,
+        onPlaceClick: (String?) -> Unit,
+        onBranchClick: (String) -> Unit = {},
+        onCameraRest: (Double, Double, Int, Boolean) -> Unit = { _, _, _, _ -> },
+    ) {
         this.map = map
         this.onPlaceClick = onPlaceClick
         map.setOnLabelClickListener { _, _, label ->
-            val id = label.tag as? String
-            if (id != null) onPlaceClick(id)
-            id != null
+            when (val tag = label.tag) {
+                is String -> {
+                    onPlaceClick(tag)
+                    true
+                }
+                is BranchTag -> {
+                    onBranchClick(tag.brandKey)
+                    true
+                }
+                else -> false
+            }
         }
         map.setOnMapClickListener { _, _, _, _ -> onPlaceClick(null) }
+        // A move the app makes itself (following, focusing, the first view) reports no gesture; a hand does.
+        map.setOnCameraMoveEndListener { _, position, gesture ->
+            onCameraRest(position.position.latitude, position.position.longitude, position.zoomLevel, gesture != GestureType.Unknown)
+        }
     }
 
     /** Keeps the visible middle of the map clear of the overlays, so a focused pin is not hidden behind the cards. */
@@ -125,7 +151,9 @@ class MapRenderer(private val density: Float) {
 
     private fun drawBranches(m: KakaoMap, scene: MapScene) {
         val labels = m.labelManager?.layer ?: return
-        val branches = scene.win?.branches.orEmpty()
+        // With a list from the screen the badges open their brand's coupons; without one, as before, they only show.
+        val tappable = scene.branches != null
+        val branches = scene.branches ?: scene.win?.branches.orEmpty()
         for (id in badges.keys - branches.keys) badges.remove(id)?.let { labels.remove(it.item) }
         for ((id, b) in branches) {
             val near = scene.here?.let { isNear(distanceMeters(it, Coords(b.latitude, b.longitude)), BRANCH_RADIUS_M) } ?: false
@@ -135,7 +163,8 @@ class MapRenderer(private val density: Float) {
             badges.remove(id)?.let { labels.remove(it.item) }
             val options = LabelOptions.from(id, latLng(b.latitude, b.longitude))
                 .setStyles(LabelStyles.from(LabelStyle.from(MapBitmaps.badge(letter, near, density)).setAnchorPoint(0.5f, 0.5f)))
-                .setClickable(false)
+                .setClickable(tappable)
+            if (tappable) options.setTag(BranchTag(b.brandKey))
             labels.addLabel(options)?.let { badges[id] = Drawn(it, sig) }
         }
     }
@@ -180,6 +209,13 @@ class MapRenderer(private val density: Float) {
     /** The camera is placed once, when there is something to show; after that the user owns it. */
     private fun fitOnce(m: KakaoMap, scene: MapScene) {
         if (fitted) return
+        // Following: show where the user is. Only when the position is not known, fit the saved places as before.
+        val here = scene.here
+        if (scene.following && here != null) {
+            fitted = true
+            m.moveCamera(CameraUpdateFactory.newCenterPosition(latLng(here.latitude, here.longitude), DEFAULT_ZOOM))
+            return
+        }
         val points = scene.places.map { latLng(it.latitude, it.longitude) } + listOfNotNull(scene.here?.let { latLng(it.latitude, it.longitude) })
         if (points.isEmpty()) return
         fitted = true
@@ -188,6 +224,12 @@ class MapRenderer(private val density: Float) {
         } else {
             m.moveCamera(CameraUpdateFactory.fitMapPoints(points.toTypedArray(), (50 * density).toInt()))
         }
+    }
+
+    /** Keeps the user in view while following; like [focus], it does not zoom in further than needed. */
+    fun followTo(lat: Double, lng: Double) {
+        val m = map ?: return
+        m.moveCamera(CameraUpdateFactory.newCenterPosition(latLng(lat, lng), max(m.zoomLevel, DEFAULT_ZOOM)), CameraAnimation.from(400))
     }
 
     /** Moves the camera to a place, keeping the current zoom unless it is far out. */

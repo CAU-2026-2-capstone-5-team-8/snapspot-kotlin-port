@@ -49,13 +49,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.capstone.snapspot.R
+import com.capstone.snapspot.domain.MapFollow
+import com.capstone.snapspot.domain.couponsForBrand
+import com.capstone.snapspot.domain.dDay
+import com.capstone.snapspot.domain.daysLeft
 import com.capstone.snapspot.domain.distanceMeters
 import com.capstone.snapspot.domain.formatDistance
 import com.capstone.snapspot.domain.isNear
+import com.capstone.snapspot.domain.mapPlaces
+import com.capstone.snapspot.domain.model.BranchRef
 import com.capstone.snapspot.domain.model.Coords
+import com.capstone.snapspot.domain.model.Coupon
 import com.capstone.snapspot.domain.model.Place
 import com.capstone.snapspot.domain.model.WindowState
+import com.capstone.snapspot.domain.visibleBranches
 import com.capstone.snapspot.ui.components.Shot
 import com.capstone.snapspot.ui.theme.LocalReduceMotion
 import com.capstone.snapspot.ui.theme.SnapColor
@@ -85,7 +95,31 @@ fun MapContent(
     modifier: Modifier = Modifier,
     map: @Composable (MapParams, Modifier) -> Unit = { p, m -> KakaoMapView(p, m) },
     onSetupAlerts: (() -> Unit)? = null,
+    /** Coupons decide which branch badges stay: a brand with no active coupon has none. */
+    coupons: List<Coupon> = emptyList(),
+    /** Branches found by the map's own lookup, drawn next to the watch plan's. */
+    mapBranches: Map<String, BranchRef> = emptyMap(),
+    /** The user is at this place while the map is open; true when the map is following. */
+    onHere: (Coords, Boolean) -> Unit = { _, _ -> },
+    /** "이 지역에서 다시 탐색" with the center of what the map shows. */
+    onSearchHere: (Coords) -> Unit = {},
+    onOpenCoupon: (String) -> Unit = {},
 ) {
+    // From here on, `places` is what the map draws: places that have ended are not on it (the saved list keeps them).
+    // Looked at again when the lists change and when the screen comes back, which is when a date can have passed.
+    var resumes by remember { mutableIntStateOf(0) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { resumes++ }
+    val now = remember(places, coupons, resumes) { System.currentTimeMillis() }
+    val places = remember(places, now) { mapPlaces(places, now) }
+    val branches = remember(mapBranches, win, coupons, now) { visibleBranches(mapBranches, win?.branches.orEmpty(), coupons, now) }
+
+    var follow by remember { mutableStateOf(MapFollow()) }
+    var camera by remember { mutableStateOf<Coords?>(null) }
+    // The brand whose coupons are listed. The list is read from the coupons each time, so it is never out of date.
+    var sheetBrand by remember { mutableStateOf<String?>(null) }
+    val sheetCoupons = sheetBrand?.let { couponsForBrand(coupons, it, now) }.orEmpty()
+    LaunchedEffect(here, follow.following, coupons) { if (here != null) onHere(here, follow.following) }
+
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val reduceMotion = LocalReduceMotion.current
@@ -101,6 +135,7 @@ fun MapContent(
         if (id == null) return
         val i = places.indexOfFirst { it.id == id }
         if (i < 0) return
+        follow = follow.placeFocused() // looking at a place ends following, or the next position would pull the map back
         if (fromMap) scope.launch { if (reduceMotion) listState.scrollToItem(i) else listState.animateScrollToItem(i) }
         val p = places[i]
         focus = MapFocus(p.latitude, p.longitude, ++nonce)
@@ -159,6 +194,20 @@ fun MapContent(
                             Log.w("SnapSpot", "Kakao map failed to load", e)
                             failure = e
                         },
+                        branches = branches,
+                        following = follow.following,
+                        onBranch = { key ->
+                            val list = couponsForBrand(coupons, key, now)
+                            when (list.size) {
+                                0 -> Unit
+                                1 -> onOpenCoupon(list[0].id)
+                                else -> sheetBrand = key
+                            }
+                        },
+                        onCamera = { lat, lng, zoom, byUser ->
+                            camera = Coords(lat, lng)
+                            follow = follow.cameraMoved(byUser, zoom)
+                        },
                     ),
                     Modifier.semantics { contentDescription = mapDesc },
                 )
@@ -184,6 +233,31 @@ fun MapContent(
             }
             // While alerts are off, the pill opens the walk-through that turns them on.
             StatusPill(alertsOn, watching, onClick = if (alertsOn) null else onSetupAlerts)
+        }
+
+        // Under the top row: look for branches where the user moved the map, or ask for a closer view.
+        if (follow.showSearchHere || follow.zoomHint) {
+            Box(Modifier.align(Alignment.TopCenter).padding(top = with(density) { topInset.toDp() } + Space.S)) {
+                if (follow.showSearchHere) {
+                    MapPill(stringResource(R.string.map_search_here)) {
+                        camera?.let(onSearchHere)
+                        follow = follow.searched()
+                    }
+                } else {
+                    MapPill(stringResource(R.string.map_zoom_in), onClick = null)
+                }
+            }
+        }
+
+        // Back to the user's position, and following again.
+        if (!follow.following && here != null) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = Space.L, bottom = with(density) { railHeightPx.toDp() } + Space.L + Space.M),
+            ) {
+                MapPill(stringResource(R.string.map_my_location)) { follow = follow.backToMe() }
+            }
         }
 
         // Bottom overlay: the card rail, or a hint when nothing is saved yet.
@@ -217,6 +291,19 @@ fun MapContent(
                 }
             }
         }
+
+        // Several coupons of one brand: soonest-expiring first, each opens its coupon.
+        if (sheetCoupons.size > 1) {
+            CouponSheet(
+                coupons = sheetCoupons,
+                now = now,
+                onOpen = { id ->
+                    sheetBrand = null
+                    onOpenCoupon(id)
+                },
+                onClose = { sheetBrand = null },
+            )
+        }
     }
 }
 
@@ -241,6 +328,65 @@ private fun StatusPill(alertsOn: Boolean, watching: Int, onClick: (() -> Unit)? 
                 if (alertsOn) stringResource(R.string.watching_count, watching) else stringResource(R.string.alerts_setup_needed),
                 style = SnapType.Body.copy(fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 18.sp),
             )
+        }
+    }
+}
+
+/** A small rounded button (or, without [onClick], a hint) floating over the map. */
+@Composable
+private fun MapPill(text: String, onClick: (() -> Unit)?) {
+    Box(
+        if (onClick != null) Modifier.minimumInteractiveComponentSize().clickable(role = Role.Button, onClick = onClick) else Modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = SnapType.Body.copy(fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = 20.sp),
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(SnapColor.Surface)
+                .border(BorderStroke(1.dp, SnapColor.Line), RoundedCornerShape(999.dp))
+                .padding(horizontal = Space.L, vertical = Space.S),
+        )
+    }
+}
+
+/** The coupons of one brand over the map, soonest-expiring first. Tapping outside closes it. */
+@Composable
+private fun CouponSheet(coupons: List<Coupon>, now: Long, onOpen: (String) -> Unit, onClose: () -> Unit) {
+    val closeDesc = stringResource(R.string.map_branch_sheet_close)
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(SnapColor.Ink.copy(alpha = 0.35f))
+            .clickable(onClickLabel = closeDesc, onClick = onClose),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                .background(SnapColor.Surface)
+                .clickable(enabled = false, onClick = {})
+                .padding(Space.L),
+            verticalArrangement = Arrangement.spacedBy(Space.S),
+        ) {
+            Text(stringResource(R.string.map_branch_sheet_title, coupons.first().brand), style = SnapType.Title)
+            for (c in coupons) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(BorderStroke(1.dp, SnapColor.Line), RoundedCornerShape(12.dp))
+                        .clickable(role = Role.Button) { onOpen(c.id) }
+                        .padding(Space.M),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(c.benefit, style = SnapType.Body, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    dDay(daysLeft(c, now))?.let { Text(it, style = SnapType.Label.copy(color = SnapColor.Green)) }
+                }
+            }
         }
     }
 }

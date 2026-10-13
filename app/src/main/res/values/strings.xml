@@ -106,6 +106,11 @@
     <string name="map_error_body">카카오 개발자 사이트에서 이 앱의 패키지명과 키 해시가 등록됐는지 확인해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
     <string name="map_unsupported_body">이 기기에서는 카카오 지도를 쓸 수 없어요. 카카오 지도는 ARM 기기용이라 x86 에뮬레이터에서는 열리지 않아요. 실제 폰이나 ARM 에뮬레이터에서 실행해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
     <string name="map_no_key_body">카카오 지도 키가 설정되지 않았어요. local.properties의 KAKAO_NATIVE_KEY를 확인해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
+    <string name="map_search_here">이 지역에서 다시 탐색</string>
+    <string name="map_zoom_in">확대해 주세요</string>
+    <string name="map_my_location">내 위치로</string>
+    <string name="map_branch_sheet_title">%1$s 쿠폰</string>
+    <string name="map_branch_sheet_close">목록 닫기</string>
 
     <!-- Coupons tab -->
     <string name="coupons_title">쿠폰함</string>

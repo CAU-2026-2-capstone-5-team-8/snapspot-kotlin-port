@@ -18,6 +18,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.capstone.snapspot.domain.model.BranchRef
 import com.capstone.snapspot.domain.model.Coords
 import com.capstone.snapspot.domain.model.Place
 import com.capstone.snapspot.domain.model.WindowState
@@ -42,6 +43,14 @@ class MapParams(
     val bottomInsetPx: Int,
     val onSelect: (String?) -> Unit,
     val onFailure: (Exception) -> Unit,
+    /** Coupon branches to draw (null: only the watch plan's, not tappable, as before). */
+    val branches: Map<String, BranchRef>? = null,
+    /** The camera keeps the user's position in view. */
+    val following: Boolean = false,
+    /** A branch badge was tapped; the argument is the brand key. */
+    val onBranch: (String) -> Unit = {},
+    /** The camera came to rest: center, zoom level, and whether the user's hand moved it (false: the app did). */
+    val onCamera: (Double, Double, Int, Boolean) -> Unit = { _, _, _, _ -> },
 )
 
 /** The Kakao map inside Compose. Its lifecycle follows the screen's, as the SDK requires. */
@@ -68,7 +77,12 @@ fun KakaoMapView(params: MapParams, modifier: Modifier = Modifier) {
             },
             object : KakaoMapReadyCallback() {
                 override fun onMapReady(map: KakaoMap) {
-                    renderer.attach(map) { id -> latest.onSelect(id) }
+                    renderer.attach(
+                        map,
+                        onPlaceClick = { id -> latest.onSelect(id) },
+                        onBranchClick = { key -> latest.onBranch(key) },
+                        onCameraRest = { lat, lng, zoom, byUser -> latest.onCamera(lat, lng, zoom, byUser) },
+                    )
                     ready = true
                 }
             },
@@ -97,8 +111,17 @@ fun KakaoMapView(params: MapParams, modifier: Modifier = Modifier) {
         }
     }
 
-    LaunchedEffect(ready, params.places, params.here, params.win, params.selectedId, thumbs.size) {
-        if (ready) renderer.render(MapScene(params.places, params.here, params.win, params.selectedId, thumbs.toMap()))
+    LaunchedEffect(ready, params.places, params.here, params.win, params.selectedId, thumbs.size, params.branches) {
+        if (ready) {
+            renderer.render(
+                MapScene(params.places, params.here, params.win, params.selectedId, thumbs.toMap(), params.branches, params.following),
+            )
+        }
+    }
+    // While following, the camera goes where the user goes (also when "내 위치로" turns following back on).
+    LaunchedEffect(ready, params.following, params.here) {
+        val h = params.here
+        if (ready && params.following && h != null) renderer.followTo(h.latitude, h.longitude)
     }
     LaunchedEffect(ready, params.topInsetPx, params.bottomInsetPx) {
         if (ready) renderer.setInsets(params.topInsetPx, params.bottomInsetPx)
