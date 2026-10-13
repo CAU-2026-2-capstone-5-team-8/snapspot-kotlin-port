@@ -1,0 +1,198 @@
+<resources>
+    <string name="app_name">SnapSpot</string>
+
+    <!-- Bottom bar -->
+    <string name="tab_map">지도</string>
+    <string name="tab_coupons">쿠폰함</string>
+    <string name="tab_list">장소</string>
+    <string name="tab_status">현황</string>
+    <string name="add_from_screenshot">스크린샷에서 장소 추가</string>
+
+    <!-- Common -->
+    <string name="close">닫기</string>
+    <string name="ok">확인</string>
+
+    <!-- Notifications -->
+    <string name="channel_name">근처 저장 장소 알림</string>
+    <string name="btn_test_alert">알림 테스트</string>
+
+    <!-- Setup / errors -->
+    <string name="setup_needed_title">설정이 필요해요</string>
+    <string name="setup_needed_body">local.properties에 GEMINI_API_KEY를 넣고 다시 빌드해 주세요.</string>
+    <string name="read_failed_title">스크린샷을 읽지 못했어요</string>
+    <string name="location_not_found_title">위치를 못 찾았어요</string>
+    <string name="location_not_found_body">주소를 더 구체적으로 고치거나 \"지금 위치로\"를 눌러 주세요.</string>
+
+    <!-- Add screen -->
+    <string name="add_title_reading">스크린샷 읽는 중</string>
+    <string name="add_title_coupon">새 쿠폰 확인</string>
+    <string name="add_title_place">새 장소 확인</string>
+    <string name="kind_place">가 볼 장소</string>
+    <string name="kind_coupon">프랜차이즈 쿠폰</string>
+    <string name="save_coupon">쿠폰함에 저장</string>
+    <string name="save_place">지도에 저장</string>
+
+    <string name="step_read">스크린샷에서 장소 정보 읽기</string>
+    <string name="step_find_place">카카오맵에서 장소 찾기</string>
+    <string name="step_find_branches">근처 지점 찾기</string>
+    <string name="found_name">찾은 이름: %1$s</string>
+
+    <string name="notice_not_place">이 이미지에서는 장소를 찾기 어려웠어요. 이름과 주소를 직접 고쳐 주세요.</string>
+    <string name="field_place_name">장소 이름</string>
+    <string name="field_category">분류</string>
+    <string name="field_note">메모</string>
+    <string name="field_address">주소나 위치 단서</string>
+    <string name="field_end_date_place">종료일 (팝업·전시만)</string>
+    <string name="hint_end_date_place">예: 2026-10-31 (없으면 비워 두세요)</string>
+    <string name="label_found_location">지도에서 찾은 위치</string>
+    <string name="distance_from_here">여기서 %1$s</string>
+    <string name="other_candidates">다른 후보</string>
+    <string name="btn_refind_address">주소로 다시 찾기</string>
+    <string name="btn_pin_here">지금 위치로</string>
+    <string name="label_radius">이만큼 가까워지면 알려 드려요</string>
+
+    <string name="match_not_found_title">위치를 못 찾았어요</string>
+    <string name="match_not_found_body">주소를 고쳐서 다시 찾거나, 지금 위치로 저장하세요.</string>
+    <string name="match_device_title">휴대폰 지도에서 위치를 찾았어요</string>
+    <string name="match_device_body">가게 이름은 확인하지 못했어요.</string>
+    <string name="match_address_title">주소 위치</string>
+    <string name="match_sure">카카오맵에서 찾은 장소예요</string>
+    <string name="match_unsure">비슷한 곳을 찾았어요. 맞는지 확인해 주세요</string>
+    <string name="candidate_description">%1$s, 일치도 %2$d퍼센트로 바꾸기</string>
+
+    <string name="field_brand">브랜드</string>
+    <string name="field_benefit">받을 수 있는 것</string>
+    <string name="field_end_date_coupon">유효기간 마지막 날</string>
+    <string name="hint_end_date_coupon">예: 2026-12-31 (없으면 비워 두세요)</string>
+    <string name="label_branches">알림이 울릴 지점</string>
+    <string name="preview_unknown_here_title">위치를 아직 몰라요</string>
+    <string name="preview_unknown_here_body">위치를 허용하면 근처 지점을 미리 보여 드려요. 저장은 지금 해도 돼요.</string>
+    <string name="preview_searching">근처 지점을 찾는 중이에요</string>
+    <string name="preview_none_title">근처에서 %1$s 지점을 못 찾았어요</string>
+    <string name="preview_none_default_brand">이 브랜드</string>
+    <string name="preview_none_body">브랜드 이름을 고친 뒤 다시 찾아 보세요. 멀리 가면 그곳 지점을 다시 찾아요.</string>
+    <string name="preview_count">근처 %1$s %2$d곳</string>
+    <string name="preview_nearest">가장 가까운 곳은 %1$s이에요. 이 중 어디든 가까워지면 알려 드려요.</string>
+    <string name="btn_refind_brand">브랜드로 다시 찾기</string>
+
+    <!-- Shared -->
+    <string name="btn_cancel">취소</string>
+    <string name="btn_delete">삭제</string>
+    <string name="btn_map">지도</string>
+    <string name="watch_on">앱을 닫아도 근처에서 알려 드려요</string>
+    <string name="watch_off">앱을 열어 둔 동안만 알려 드려요</string>
+    <string name="watching_count">%1$d곳 지켜보는 중</string>
+    <string name="alerts_setup_needed">알림 설정 필요</string>
+    <string name="no_address">주소 없음</string>
+
+    <!-- Cards -->
+    <string name="near_now_place">지금 근처예요</string>
+    <string name="near_tag">근처</string>
+    <string name="near_branch">지금 근처: %1$s</string>
+    <!-- Quoted so the two-space gaps survive; Android otherwise collapses runs of spaces. -->
+    <string name="nearest_branch_line">"가장 가까운 지점  %1$s  %2$s"</string>
+    <string name="searching_branches">근처 지점을 찾는 중이에요</string>
+    <string name="coupon_off">알림이 꺼진 쿠폰이에요</string>
+    <string name="open_coupon_desc">%1$s %2$s 쿠폰 열기</string>
+    <string name="show_on_map_desc">%1$s, 지도에서 보기</string>
+    <string name="distance_desc">여기서 %1$s</string>
+
+    <!-- Map tab -->
+    <string name="wordmark">SnapSpot</string>
+    <string name="map_desc">저장한 장소 지도</string>
+    <string name="map_empty_title">첫 장소를 꽂아 보세요</string>
+    <string name="map_empty_body">아래 + 버튼으로 맛집이나 팝업 스크린샷을 고르면, 장소를 찾아 이 지도에 핀으로 꽂아 드려요.</string>
+    <string name="map_error_title">지도를 불러오지 못했어요</string>
+    <string name="map_error_body">카카오 개발자 사이트에서 이 앱의 패키지명과 키 해시가 등록됐는지 확인해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
+    <string name="map_unsupported_body">이 기기에서는 카카오 지도를 쓸 수 없어요. 카카오 지도는 ARM 기기용이라 x86 에뮬레이터에서는 열리지 않아요. 실제 폰이나 ARM 에뮬레이터에서 실행해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
+    <string name="map_no_key_body">카카오 지도 키가 설정되지 않았어요. local.properties의 KAKAO_NATIVE_KEY를 확인해 주세요. 지도 말고 나머지 기능은 그대로 쓸 수 있어요.</string>
+
+    <!-- Coupons tab -->
+    <string name="coupons_title">쿠폰함</string>
+    <string name="coupons_count">%1$d장</string>
+    <string name="coupons_count_watching">%1$d장, 지점 %2$d곳 지켜보는 중</string>
+    <string name="coupons_empty_title">프랜차이즈 쿠폰을 넣어 두세요</string>
+    <string name="coupons_empty_body">기프티콘이나 모바일 쿠폰 스크린샷을 아래 + 버튼으로 추가하면, 그 브랜드의 어느 지점이든 가까워졌을 때 알려 드려요.</string>
+    <string name="past_coupons">지난 쿠폰</string>
+    <string name="used_label">사용했어요</string>
+
+    <!-- Places tab -->
+    <string name="places_title">저장한 곳</string>
+    <string name="places_count">%1$d곳</string>
+    <string name="places_count_sorted">%1$d곳, 가까운 순</string>
+    <string name="places_empty_title">아직 저장한 곳이 없어요</string>
+    <string name="places_empty_body">아래 + 버튼으로 인스타 맛집이나 팝업 포스터 스크린샷을 추가하면, 장소를 찾아 저장하고 근처에 가면 알려 드려요.</string>
+    <string name="delete_place_title">%1$s 삭제</string>
+    <string name="delete_place_body">이 장소의 근처 알림도 함께 꺼져요.</string>
+
+    <!-- Status tab -->
+    <string name="status_title">알림 현황</string>
+    <string name="status_perms_notice">앱을 닫아도 알림을 받으려면 알림 권한과 위치 \"항상 허용\"이 필요해요.</string>
+    <string name="status_open_settings">앱 설정 열기</string>
+    <string name="status_watch_title">지켜보는 곳</string>
+    <string name="status_watch_body">휴대폰은 한 번에 %1$d곳까지만 지켜볼 수 있어요. 가까운 곳부터 장소와 브랜드별로 고르게 나눠 담고, 지금 위치에서 %2$skm를 벗어나면 그 자리에서 다시 골라요.</string>
+    <string name="slot_empty">비어 있음</string>
+    <string name="slot_count">%1$d칸</string>
+    <string name="slot_meter_desc">%1$d칸 중 %2$d칸 사용</string>
+    <string name="status_last_title">마지막으로 다시 고른 때</string>
+    <string name="fact_time">시각</string>
+    <string name="fact_kakao">카카오 지점 검색</string>
+    <string name="fact_cached">저장해 둔 결과 사용</string>
+    <string name="fact_requests">%1$d회</string>
+    <string name="fact_here">기준 위치</string>
+    <string name="fact_here_known">확인됨</string>
+    <string name="fact_here_unknown">아직 모름</string>
+    <string name="status_never">아직 고른 적이 없어요. 위치 권한을 허용하면 바로 시작해요.</string>
+    <string name="log_title">측정 기록</string>
+    <string name="log_body">알림이 오고 간 때와 다시 고른 때를 기기에 적어 둬요 (최근 500건까지). 내보내서 성공률과 지연을 계산할 수 있어요.</string>
+    <string name="log_saved">저장된 기록</string>
+    <string name="log_count">%1$d건</string>
+    <string name="log_export">내보내기</string>
+    <string name="log_clear">지우기</string>
+    <string name="log_share_title">SnapSpot 기록</string>
+
+    <!-- Coupon detail -->
+    <string name="coupon_missing_title">쿠폰을 찾지 못했어요</string>
+    <string name="coupon_missing_body">삭제했거나 다른 기기에서 추가한 쿠폰일 수 있어요.</string>
+    <string name="to_coupons">쿠폰함으로</string>
+    <string name="coupon_image_desc">%1$s 쿠폰 이미지</string>
+    <string name="coupon_no_image">쿠폰 이미지가 없어요</string>
+    <string name="coupon_used">사용한 쿠폰이에요</string>
+    <string name="coupon_no_expiry">유효기간 없음</string>
+    <string name="nearby_branches">가까운 지점</string>
+    <string name="btn_used">사용했어요</string>
+    <string name="btn_delete_coupon">쿠폰 삭제</string>
+    <string name="delete_coupon_title">%1$s 쿠폰 삭제</string>
+    <string name="delete_coupon_body">이 쿠폰의 지점 알림도 함께 꺼져요.</string>
+
+    <!-- permission guide -->
+    <string name="perm_guide_title">알림 받을 준비</string>
+    <string name="perm_guide_intro">저장한 곳 근처에 가면 앱을 닫아 둬도 알려 드리려고 세 가지를 켜요. 하나씩 차례로 안내할게요.</string>
+    <string name="perm_step_fg_title">위치 허용</string>
+    <string name="perm_step_fg_why">가까이 갔는지 알려면 지금 위치를 알아야 해요.</string>
+    <string name="perm_step_notif_title">알림 허용</string>
+    <string name="perm_step_notif_why">근처에 도착했을 때 알림으로 알려 드려요.</string>
+    <string name="perm_step_notif_how">설정에서 이 앱의 알림을 켜 주세요.</string>
+    <string name="perm_step_bg_title">위치 \"항상 허용\"</string>
+    <string name="perm_step_bg_why">앱을 닫아도 알림이 오려면 필요해요. 꺼져 있으면 앱을 열어 둔 동안만 알려 드려요.</string>
+    <string name="perm_step_bg_how">설정 → 권한 → 위치에서 \"항상 허용\"을 골라 주세요.</string>
+    <string name="perm_step_done">완료</string>
+    <string name="perm_step_current">지금 할 일</string>
+    <string name="perm_ask_dialog">허용하기</string>
+    <string name="perm_ask_settings">설정에서 허용하기</string>
+    <string name="perm_denied_hint">허용하지 않으셨어요. 설정에서 바꿀 수 있어요.</string>
+    <string name="perm_device_location_title">휴대폰 위치 켜기</string>
+    <string name="perm_device_location_why">휴대폰의 위치 기능이 꺼져 있으면 권한이 있어도 알림이 오지 않아요.</string>
+    <string name="perm_device_location_button">위치 켜기</string>
+    <string name="perm_accuracy_title">위치 정확도 높이기 (권장)</string>
+    <string name="perm_accuracy_why">구글 위치 정확도를 켜면 근처에 왔다는 걸 더 정확하게 알아요. 필수는 아니에요.</string>
+    <string name="perm_accuracy_button">정확도 켜기</string>
+    <string name="perm_battery_title">배터리 사용 제한 풀기 (권장)</string>
+    <string name="perm_battery_why">일부 휴대폰은 오래 안 쓴 앱을 멈춰 알림이 늦거나 오지 않을 수 있어요. 필수는 아니에요.</string>
+    <string name="perm_battery_button">배터리 설정 열기</string>
+    <string name="perm_later">나중에</string>
+    <string name="perm_all_set_title">준비가 끝났어요</string>
+    <string name="perm_all_set_body">앱을 닫아도 저장한 곳 근처에서 알려 드려요.</string>
+    <string name="perm_close">닫기</string>
+    <string name="status_open_guide">알림 설정 안내 열기</string>
+</resources>
