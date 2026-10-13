@@ -1,0 +1,5 @@
+<resources>
+    <color name="paper">#F2F3EE</color>
+    <color name="iconBackground">#2D7A57</color>
+    <color name="notification_icon_color">#2D7A57</color>
+</resources>
