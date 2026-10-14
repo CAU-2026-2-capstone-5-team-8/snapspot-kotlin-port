@@ -3,6 +3,7 @@ package com.capstone.snapspot.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -60,7 +61,8 @@ class PlaceSheetTest {
         rule.waitForIdle()
         rule.onNodeWithText("굿즈 사전 줄서기").assertExists()
         rule.onNodeWithText("10월 31일까지").assertExists()
-        rule.onNodeWithText("팝업").assertExists()
+        // "팝업" is also on the rail card, so look for the one node that has it together with the end date: the sheet.
+        rule.onNode(hasText("팝업") and hasText("10월 31일까지")).assertExists()
         rule.onNodeWithText("카카오 상세").assertExists()
     }
 
