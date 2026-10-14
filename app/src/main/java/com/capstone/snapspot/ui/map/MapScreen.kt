@@ -59,6 +59,7 @@ import com.capstone.snapspot.domain.daysLeft
 import com.capstone.snapspot.domain.distanceMeters
 import com.capstone.snapspot.domain.formatDistance
 import com.capstone.snapspot.domain.isNear
+import com.capstone.snapspot.domain.limitBranches
 import com.capstone.snapspot.domain.mapPlaces
 import com.capstone.snapspot.domain.model.BranchRef
 import com.capstone.snapspot.domain.model.Coords
@@ -104,6 +105,8 @@ fun MapContent(
     /** "이 지역에서 다시 탐색" with the center of what the map shows. */
     onSearchHere: (Coords) -> Unit = {},
     onOpenCoupon: (String) -> Unit = {},
+    /** The Kakao page of a place, from its description. */
+    onOpenPlacePage: (Place) -> Unit = {},
 ) {
     // From here on, `places` is what the map draws: places that have ended are not on it (the saved list keeps them).
     // Looked at again when the lists change and when the screen comes back, which is when a date can have passed.
@@ -111,10 +114,14 @@ fun MapContent(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { resumes++ }
     val now = remember(places, coupons, resumes) { System.currentTimeMillis() }
     val places = remember(places, now) { mapPlaces(places, now) }
-    val branches = remember(mapBranches, win, coupons, now) { visibleBranches(mapBranches, win?.branches.orEmpty(), coupons, now) }
 
     var follow by remember { mutableStateOf(MapFollow()) }
     var camera by remember { mutableStateOf<Coords?>(null) }
+    // Only the branches near the user (or near the middle of the map once it has been moved by hand) are drawn.
+    val branchCenter = if (follow.following) here else camera ?: here
+    val branches = remember(mapBranches, win, coupons, now, branchCenter) {
+        limitBranches(visibleBranches(mapBranches, win?.branches.orEmpty(), coupons, now), branchCenter)
+    }
     // The brand whose coupons are listed. The list is read from the coupons each time, so it is never out of date.
     var sheetBrand by remember { mutableStateOf<String?>(null) }
     val sheetCoupons = sheetBrand?.let { couponsForBrand(coupons, it, now) }.orEmpty()
@@ -129,12 +136,15 @@ fun MapContent(
     var nonce by remember { mutableIntStateOf(0) }
     var failure by remember { mutableStateOf<Exception?>(null) }
     var railHeightPx by remember { mutableIntStateOf(0) }
+    // The place whose short description is open. It opens for a pin and for a place shown on the map, not for the rail.
+    var sheetPlaceId by remember { mutableStateOf<String?>(null) }
 
     fun select(id: String?, fromMap: Boolean) {
         selectedId = id
         if (id == null) return
         val i = places.indexOfFirst { it.id == id }
         if (i < 0) return
+        if (fromMap) sheetPlaceId = id
         follow = follow.placeFocused() // looking at a place ends following, or the next position would pull the map back
         if (fromMap) scope.launch { if (reduceMotion) listState.scrollToItem(i) else listState.animateScrollToItem(i) }
         val p = places[i]
@@ -302,6 +312,16 @@ fun MapContent(
                     onOpenCoupon(id)
                 },
                 onClose = { sheetBrand = null },
+            )
+        }
+
+        // A pin, or a place shown from the places tab: what it is and until when.
+        places.firstOrNull { it.id == sheetPlaceId }?.let { p ->
+            PlaceSheet(
+                place = p,
+                now = now,
+                onOpenPage = if (p.placeUrl != null) ({ onOpenPlacePage(p) }) else null,
+                onClose = { sheetPlaceId = null },
             )
         }
     }

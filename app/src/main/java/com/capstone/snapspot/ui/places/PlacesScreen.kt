@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.capstone.snapspot.R
 import com.capstone.snapspot.domain.distanceMeters
 import com.capstone.snapspot.domain.isNear
+import com.capstone.snapspot.domain.mapPlaces
 import com.capstone.snapspot.domain.model.Coords
 import com.capstone.snapspot.domain.model.Place
 import com.capstone.snapspot.domain.placeFacts
@@ -44,6 +45,8 @@ fun PlacesContent(
     modifier: Modifier = Modifier,
     now: Long = System.currentTimeMillis(),
     onTest: ((Place) -> Unit)? = null,
+    /** Shows a place on the app's own map. Without it the "지도" button opens the Kakao page, as it always did. */
+    onShowOnMap: ((Place) -> Unit)? = null,
 ) {
     var pendingDelete by remember { mutableStateOf<Place?>(null) }
     Column(
@@ -76,7 +79,13 @@ fun PlacesContent(
                     near = isNear(distance, p.radius),
                     facts = placeFacts(p, now),
                     onDelete = { pendingDelete = p },
-                    onMap = if (p.placeUrl != null) ({ onOpenPage(p) }) else null,
+                    onMap = when {
+                        // A place that has ended is not drawn on the map, so there is nothing to show there.
+                        onShowOnMap != null -> if (mapPlaces(listOf(p), now).isNotEmpty()) ({ onShowOnMap(p) }) else null
+                        p.placeUrl != null -> ({ onOpenPage(p) })
+                        else -> null
+                    },
+                    onKakao = if (onShowOnMap != null && p.placeUrl != null) ({ onOpenPage(p) }) else null,
                     onTest = onTest?.let { test -> { test(p) } },
                 )
             }

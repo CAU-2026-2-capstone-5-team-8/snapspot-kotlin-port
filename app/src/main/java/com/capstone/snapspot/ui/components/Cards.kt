@@ -110,6 +110,7 @@ fun PlaceCard(
     modifier: Modifier = Modifier,
     onMap: (() -> Unit)? = null,
     onTest: (() -> Unit)? = null,
+    onKakao: (() -> Unit)? = null,
 ) {
     Column(modifier.cardFrame(near)) {
         if (near) NearBand(stringResource(R.string.near_now_place))
@@ -149,6 +150,7 @@ fun PlaceCard(
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     if (onMap != null) SnapButton(stringResource(R.string.btn_map), onMap, kind = ButtonKind.Quiet)
+                    if (onKakao != null) SnapButton(stringResource(R.string.btn_kakao_detail), onKakao, kind = ButtonKind.Quiet)
                     if (onTest != null) SnapButton(stringResource(R.string.btn_test_alert), onTest, kind = ButtonKind.Quiet)
                     SnapButton(stringResource(R.string.btn_delete), onDelete, kind = ButtonKind.Quiet)
                 }
