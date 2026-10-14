@@ -79,6 +79,7 @@
     <string name="btn_cancel">취소</string>
     <string name="btn_delete">삭제</string>
     <string name="btn_map">지도</string>
+    <string name="btn_kakao_detail">카카오 상세</string>
     <string name="watch_on">앱을 닫아도 근처에서 알려 드려요</string>
     <string name="watch_off">앱을 열어 둔 동안만 알려 드려요</string>
     <string name="watching_count">%1$d곳 지켜보는 중</string>
@@ -161,6 +162,7 @@
     <string name="coupon_missing_body">삭제했거나 다른 기기에서 추가한 쿠폰일 수 있어요.</string>
     <string name="to_coupons">쿠폰함으로</string>
     <string name="coupon_image_desc">%1$s 쿠폰 이미지</string>
+    <string name="coupon_swipe_position">쿠폰 %1$d개 중 %2$d번째</string>
     <string name="coupon_no_image">쿠폰 이미지가 없어요</string>
     <string name="coupon_used">사용한 쿠폰이에요</string>
     <string name="coupon_no_expiry">유효기간 없음</string>

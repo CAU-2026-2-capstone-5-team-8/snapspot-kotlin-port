@@ -48,6 +48,7 @@ import com.capstone.snapspot.ui.AppViewModel
 import com.capstone.snapspot.ui.add.AddRoute
 import com.capstone.snapspot.ui.add.AddViewModel
 import com.capstone.snapspot.ui.coupon.CouponDetailContent
+import com.capstone.snapspot.ui.coupon.CouponSwipe
 import com.capstone.snapspot.ui.coupons.CouponsContent
 import com.capstone.snapspot.ui.map.MapBranchViewModel
 import com.capstone.snapspot.ui.map.MapContent
@@ -154,6 +155,7 @@ fun AppRoot() {
                     onHere = { at, following -> mapVm.onHere(at, following, coupons) },
                     onSearchHere = { center -> mapVm.searchAt(center, coupons) },
                     onOpenCoupon = { nav.navigate(Route.coupon(it)) },
+                    onOpenPlacePage = { p -> p.placeUrl?.let(context::openPage) },
                 )
             }
             composable(Route.COUPONS) {
@@ -167,6 +169,10 @@ fun AppRoot() {
                     watching = watching,
                     onDelete = app::deletePlace,
                     onOpenPage = { p -> p.placeUrl?.let(context::openPage) },
+                    onShowOnMap = { p ->
+                        app.showOnMap(p.id)
+                        nav.goToTab(Route.MAP)
+                    },
                     onTest = app::testPlaceAlert,
                 )
             }
@@ -229,22 +235,25 @@ fun AppRoot() {
                 popExitTransition = { exitOr(reduce) { slideOutVertically { it } } },
             ) { entry ->
                 val id = entry.arguments?.getString("id")
-                CouponDetailContent(
-                    coupon = coupons.firstOrNull { it.id == id },
-                    win = win,
-                    here = here,
-                    onClose = { nav.popBackStack() },
-                    onDelete = { c ->
-                        app.deleteCoupon(c)
-                        nav.popBackStack()
-                    },
-                    onUsed = { c ->
-                        app.markCouponUsed(c)
-                        nav.popBackStack()
-                    },
-                    onToCoupons = { nav.goToTab(Route.COUPONS) },
-                    onTest = app::testCouponAlert,
-                )
+                // Swipe left and right to the other active coupons of the same brand.
+                CouponSwipe(coupons, id) { coupon ->
+                    CouponDetailContent(
+                        coupon = coupon,
+                        win = win,
+                        here = here,
+                        onClose = { nav.popBackStack() },
+                        onDelete = { c ->
+                            app.deleteCoupon(c)
+                            nav.popBackStack()
+                        },
+                        onUsed = { c ->
+                            app.markCouponUsed(c)
+                            nav.popBackStack()
+                        },
+                        onToCoupons = { nav.goToTab(Route.COUPONS) },
+                        onTest = app::testCouponAlert,
+                    )
+                }
             }
         }
         if (route in Route.TABS) {
